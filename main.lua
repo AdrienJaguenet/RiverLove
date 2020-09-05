@@ -78,7 +78,10 @@ function love.load()
 		},
 	}
 	sfx = {
-		item_open = love.audio.newSource('resources/open.wav', 'static')
+		item_open = {
+			love.audio.newSource('resources/open.wav', 'static'),
+			love.audio.newSource('resources/open-2.wav', 'static')
+		}
 	}
 end
 
@@ -105,7 +108,7 @@ function love.draw()
 end
 
 function collectItem(k, item)
-	sfx.item_open:play()
+	sfx.item_open[math.random(#sfx.item_open)]:play()
 	for res, qty in pairs(item.prize) do
 		inventory[res] = inventory[res] + qty
 		print('Gained '..qty..' '..res..'!')
