@@ -72,7 +72,10 @@ function love.load()
 			wooden_crate = love.graphics.newImage('resources/crate-1.png'),
 			steel_crate = love.graphics.newImage('resources/crate-2.png')
 		},
-		background = love.graphics.newImage('resources/background.png')
+		background = love.graphics.newImage('resources/background.png'),
+		fonts = {
+			ui = love.graphics.newFont('resources/fonts/BradBunR.ttf', 24)
+		}
 	}
 end
 
@@ -90,6 +93,7 @@ end
 
 function love.draw()
 	drawBackground()
+	love.graphics.setFont(gfx.fonts.ui)
 	love.graphics.print("Items in game: "..#items)
 	for k, v in pairs(items) do
 		drawItem(v)
