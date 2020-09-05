@@ -1,5 +1,6 @@
 settings = {
-	ITEM_SPEED = 200,
+	ITEM_SPEED = 100,
+	ITEM_RADIUS = 30
 }
 
 function filter_inplace(arr, func)
@@ -18,11 +19,13 @@ function newItem()
 	return {
 		x = math.random(settings.MIN_SPAWN_X, settings.MAX_SPAWN_X),
 		y = 0,
+		w = settings.ITEM_RADIUS,
+		h = settings.ITEM_RADIUS
 	}
 end
 
 function drawItem(item)
-	love.graphics.circle('fill', item.x, item.y, 10)
+	love.graphics.circle('fill', item.x, item.y, settings.ITEM_RADIUS)
 end
 
 function love.load()
@@ -48,6 +51,16 @@ function love.draw()
 	love.graphics.print("Items in game: "..#items)
 	for k, v in pairs(items) do
 		drawItem(v)
+	end
+end
+
+function love.mousepressed(x, y, k)
+	if k == 1 then
+		for k, v in pairs(items) do
+			if x > v.x and x < v.x + v.w and y > v.y and y < v.y + v.h then
+				print('Clicked on item '..k..'!')
+			end
+		end
 	end
 end
 
