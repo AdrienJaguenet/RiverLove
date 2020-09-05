@@ -3,6 +3,11 @@ settings = {
 	ITEM_RADIUS = 30
 }
 
+inventory = {
+	gold = 0,
+	gems = 0
+}
+
 function filter_inplace(arr, func)
     local new_index = 1
     local size_orig = #arr
@@ -20,12 +25,24 @@ function newItem()
 		x = math.random(settings.MIN_SPAWN_X, settings.MAX_SPAWN_X),
 		y = 0,
 		w = settings.ITEM_RADIUS,
-		h = settings.ITEM_RADIUS
+		h = settings.ITEM_RADIUS,
+		prize = {
+			gold = math.random(3,7) * 5,
+			gems = math.random(1,10) == 1 and 5 or 0
+		}
 	}
 end
 
 function drawItem(item)
 	love.graphics.circle('fill', item.x, item.y, settings.ITEM_RADIUS)
+end
+
+function drawInventory()
+	str = ""
+	for k, v in pairs(inventory) do
+		str = str..k..": "..v.."\n"
+	end
+	love.graphics.print(str, 0, 40)
 end
 
 function love.load()
@@ -52,13 +69,22 @@ function love.draw()
 	for k, v in pairs(items) do
 		drawItem(v)
 	end
+	drawInventory()
+end
+
+function collectItem(k, item)
+	for res, qty in pairs(item.prize) do
+		inventory[res] = inventory[res] + qty
+		print('Gained '..qty..' '..res..'!')
+	end
+	table.remove(items, k)
 end
 
 function love.mousepressed(x, y, k)
 	if k == 1 then
 		for k, v in pairs(items) do
 			if x > v.x and x < v.x + v.w and y > v.y and y < v.y + v.h then
-				print('Clicked on item '..k..'!')
+				collectItem(k, v)
 			end
 		end
 	end
