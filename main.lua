@@ -94,8 +94,11 @@ function love.load()
 		item_open = {
 			love.audio.newSource('resources/open.wav', 'static'),
 			love.audio.newSource('resources/open-2.wav', 'static')
-		}
+		},
+		music = love.audio.newSource('resources/music.wav', 'stream')
 	}
+	sfx.music:setLooping(true)
+	sfx.music:play()
 end
 
 function love.update(dt)
