@@ -7,9 +7,6 @@ inventory = {
 	gems = 0
 }
 
-particles = {
-}
-
 function filter_inplace(arr, func)
     local new_index = 1
     local size_orig = #arr
@@ -25,7 +22,7 @@ end
 function newItem()
 	local ni = {
 		x = math.random(settings.MIN_SPAWN_X, settings.MAX_SPAWN_X),
-		y = 0,
+		y = -32,
 		w = settings.ITEM_RADIUS,
 		h = settings.ITEM_RADIUS,
 		gfx = gfx.items.steel_crate
@@ -47,15 +44,28 @@ function newItem()
 	end
 	ni.w = ni.gfx:getWidth()
 	ni.h = ni.gfx:getHeight()
-	ni.psystem = love.graphics.newParticleSystem(ni.particle, 40)
-	ni.psystem:setParticleLifetime(1,1)
-	ni.psystem:setLinearAcceleration(0, 200, 100, 200)
-	ni.psystem:setSpin(0, 20)
 	return ni
+end
+
+function newParticle(x, y, gfx)
+	local np = {
+		x = x,
+		y = y,
+		w = 8,
+		h = 8,
+		gfx = gfx,
+		velocity_y = -math.random(100),
+		velocity_x = math.random(-100, 100),
+	}
+	return np
 end
 
 function drawItem(item)
 	love.graphics.draw(item.gfx, item.x, item.y)
+end
+
+function drawParticle(particle)
+	love.graphics.draw(particle.gfx, particle.x, particle.y)
 end
 
 function drawBackground()
@@ -73,6 +83,7 @@ end
 function love.load()
 	love.window.setMode(640, 480)
 	items = {}
+	particles = {}
 	settings.MIN_SPAWN_X = love.graphics.getWidth() / 10
 	settings.MAX_SPAWN_X = 9 * love.graphics.getWidth() / 10
 	settings.DESPAWN_Y = 11 * love.graphics.getHeight() / 10
@@ -87,7 +98,9 @@ function love.load()
 		},
 		particles = {
 			wooden_crate = love.graphics.newImage('resources/particle-crate.png'),
-			steel_crate = love.graphics.newImage('resources/particle-crate-2.png')
+			wooden_crate_2 = love.graphics.newImage('resources/particle-crate-2.png'),
+			gold = love.graphics.newImage('resources/particle-coin.png'),
+			gem = love.graphics.newImage('resources/particle-gem.png')
 		},
 	}
 	sfx = {
@@ -97,6 +110,7 @@ function love.load()
 		},
 		music = love.audio.newSource('resources/music.wav', 'stream')
 	}
+	sfx.music:setVolume(0.3)
 	sfx.music:setLooping(true)
 	sfx.music:play()
 end
@@ -110,11 +124,13 @@ function love.update(dt)
 		v.y = v.y + settings.ITEM_SPEED * dt
 	end
 	for k, v in pairs(particles) do
-		v.system:update(dt)
+		v.velocity_y = v.velocity_y + 200 * dt
+		v.x = v.x + v.velocity_x * dt
+		v.y = v.y + v.velocity_y * dt
 	end
 
 	filter_inplace(items, function(item) return item.y < settings.DESPAWN_Y end)
-
+	filter_inplace(particles, function(particle) return particle.y < settings.DESPAWN_Y end)
 
 end
 
@@ -126,18 +142,31 @@ function love.draw()
 		drawItem(v)
 	end
 	for k, v in pairs(particles) do
-		love.graphics.draw(v.system, v.x, v.y)
+		drawParticle(v)
 	end
 	drawInventory()
 end
 
 function collectItem(k, item)
 	sfx.item_open[math.random(#sfx.item_open)]:play()
-	item.psystem:emit(4)
-	table.insert(particles, { system = item.psystem, x = item.x, y = item.y })
+
+	-- Particles.
+	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
+	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
+	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
+	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
+	
 	for res, qty in pairs(item.prize) do
 		inventory[res] = inventory[res] + qty
 		print('Gained '..qty..' '..res..'!')
+
+		if res == "gems" then
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.gem))
+		end
+
+		if res == "gold" then
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.gold))
+		end
 	end
 	table.remove(items, k)
 end
