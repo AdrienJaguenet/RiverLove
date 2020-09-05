@@ -99,6 +99,8 @@ function love.load()
 		particles = {
 			wooden_crate = love.graphics.newImage('resources/particle-crate.png'),
 			wooden_crate_2 = love.graphics.newImage('resources/particle-crate-2.png'),
+			metal_crate = love.graphics.newImage('resources/particle-crate-metal.png'),
+			metal_crate_2 = love.graphics.newImage('resources/particle-crate-metal-2.png'),
 			gold = love.graphics.newImage('resources/particle-coin.png'),
 			gem = love.graphics.newImage('resources/particle-gem.png')
 		},
@@ -116,7 +118,7 @@ function love.load()
 end
 
 function love.update(dt)
-	if math.random(0, 10) == 0 then
+	if math.random(0, 40) == 0 then
 		table.insert(items, newItem())
 	end
 
@@ -151,21 +153,32 @@ function collectItem(k, item)
 	sfx.item_open[math.random(#sfx.item_open)]:play()
 
 	-- Particles.
-	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
-	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
-	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
-	table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
+	if item.gfx == gfx.items.wooden_crate then
+		for i = 2, math.random(8), 1 do
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
+		end
+	else
+		for i = 2, math.random(8), 1 do
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.metal_crate))
+			table.insert(particles, newParticle(item.x, item.y, gfx.particles.metal_crate_2))
+		end
+	end
 	
 	for res, qty in pairs(item.prize) do
 		inventory[res] = inventory[res] + qty
 		print('Gained '..qty..' '..res..'!')
 
 		if res == "gems" then
-			table.insert(particles, newParticle(item.x, item.y, gfx.particles.gem))
+			for i = 0, qty, 1 do
+				table.insert(particles, newParticle(item.x, item.y, gfx.particles.gem))
+			end
 		end
 
 		if res == "gold" then
-			table.insert(particles, newParticle(item.x, item.y, gfx.particles.gold))
+			for i = 0, qty, 1 do
+				table.insert(particles, newParticle(item.x, item.y, gfx.particles.gold))
+			end
 		end
 	end
 	table.remove(items, k)
