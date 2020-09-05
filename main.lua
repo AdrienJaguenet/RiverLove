@@ -49,6 +49,10 @@ function drawItem(item)
 	love.graphics.draw(item.gfx, item.x, item.y)
 end
 
+function drawBackground()
+	love.graphics.draw(gfx.background)
+end
+
 function drawInventory()
 	str = ""
 	for k, v in pairs(inventory) do
@@ -58,6 +62,7 @@ function drawInventory()
 end
 
 function love.load()
+	love.window.setMode(640, 480)
 	items = {}
 	settings.MIN_SPAWN_X = love.graphics.getWidth() / 10
 	settings.MAX_SPAWN_X = 9 * love.graphics.getWidth() / 10
@@ -66,7 +71,8 @@ function love.load()
 		items = {
 			wooden_crate = love.graphics.newImage('resources/crate-1.png'),
 			steel_crate = love.graphics.newImage('resources/crate-2.png')
-		}
+		},
+		background = love.graphics.newImage('resources/background.png')
 	}
 end
 
@@ -83,6 +89,7 @@ function love.update(dt)
 end
 
 function love.draw()
+	drawBackground()
 	love.graphics.print("Items in game: "..#items)
 	for k, v in pairs(items) do
 		drawItem(v)
