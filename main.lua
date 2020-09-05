@@ -1,6 +1,5 @@
 settings = {
 	ITEM_SPEED = 100,
-	ITEM_RADIUS = 30
 }
 
 inventory = {
@@ -21,20 +20,33 @@ function filter_inplace(arr, func)
 end
 
 function newItem()
-	return {
+	local ni = {
 		x = math.random(settings.MIN_SPAWN_X, settings.MAX_SPAWN_X),
 		y = 0,
 		w = settings.ITEM_RADIUS,
 		h = settings.ITEM_RADIUS,
-		prize = {
-			gold = math.random(3,7) * 5,
-			gems = math.random(1,10) == 1 and 5 or 0
-		}
+		gfx = gfx.items.steel_crate
 	}
+	local t = math.random(1, 2)
+	if t == 1 then
+		ni.prize = {
+			gold = math.random(3,7) * 5,
+		}
+		ni.gfx = gfx.items.wooden_crate
+	elseif t == 2 then
+		ni.prize = {
+			gold = math.random(4,8) * 5,
+			gems = math.random(1,3) * math.random(1,3)
+		}
+		ni.gfx = gfx.items.steel_crate
+	end
+	ni.w = ni.gfx:getWidth()
+	ni.h = ni.gfx:getHeight()
+	return ni
 end
 
 function drawItem(item)
-	love.graphics.circle('fill', item.x, item.y, settings.ITEM_RADIUS)
+	love.graphics.draw(item.gfx, item.x, item.y)
 end
 
 function drawInventory()
@@ -50,6 +62,12 @@ function love.load()
 	settings.MIN_SPAWN_X = love.graphics.getWidth() / 10
 	settings.MAX_SPAWN_X = 9 * love.graphics.getWidth() / 10
 	settings.DESPAWN_Y = 11 * love.graphics.getHeight() / 10
+	gfx = {
+		items = {
+			wooden_crate = love.graphics.newImage('resources/crate-1.png'),
+			steel_crate = love.graphics.newImage('resources/crate-2.png')
+		}
+	}
 end
 
 function love.update(dt)
