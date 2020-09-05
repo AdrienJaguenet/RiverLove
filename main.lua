@@ -75,7 +75,10 @@ function love.load()
 		background = love.graphics.newImage('resources/background.png'),
 		fonts = {
 			ui = love.graphics.newFont('resources/fonts/BradBunR.ttf', 24)
-		}
+		},
+	}
+	sfx = {
+		item_open = love.audio.newSource('resources/open.wav', 'static')
 	}
 end
 
@@ -102,6 +105,7 @@ function love.draw()
 end
 
 function collectItem(k, item)
+	sfx.item_open:play()
 	for res, qty in pairs(item.prize) do
 		inventory[res] = inventory[res] + qty
 		print('Gained '..qty..' '..res..'!')
