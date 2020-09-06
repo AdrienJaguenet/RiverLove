@@ -192,7 +192,9 @@ function collectItem(k, item)
 	elseif item.gfx == gfx.items.dynamite then
 		table.remove(items, k)
 		for k, v in pairs(items) do
-			collectItem(k, v)
+			if v.gfx ~= gfx.items.dynamite then
+				collectItem(k, v)
+			end
 		end
 	end
 end
