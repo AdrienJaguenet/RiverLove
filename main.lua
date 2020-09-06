@@ -8,15 +8,15 @@ inventory = {
 }
 
 function filter_inplace(arr, func)
-    local new_index = 1
-    local size_orig = #arr
-    for old_index, v in ipairs(arr) do
-        if func(v, old_index) then
-            arr[new_index] = v
-            new_index = new_index + 1
-        end
-    end
-    for i = new_index, size_orig do arr[i] = nil end
+	local new_index = 1
+	local size_orig = #arr
+	for old_index, v in ipairs(arr) do
+		if func(v, old_index) then
+			arr[new_index] = v
+			new_index = new_index + 1
+		end
+	end
+	for i = new_index, size_orig do arr[i] = nil end
 end
 
 function newItem()
@@ -27,20 +27,20 @@ function newItem()
 		h = settings.ITEM_RADIUS,
 		gfx = gfx.items.steel_crate
 	}
-	local t = math.random(1, 2)
-	if t == 1 then
+	local t = math.random(1, 100)
+	if t < 75 then
 		ni.prize = {
 			gold = math.random(3,7) * 5,
 		}
 		ni.gfx = gfx.items.wooden_crate
-		ni.particle = gfx.particles.wooden_crate
-	elseif t == 2 then
+	elseif t >= 75 and t < 90 then
 		ni.prize = {
 			gold = math.random(4,8) * 5,
 			gems = math.random(1,3) * math.random(1,3)
 		}
 		ni.gfx = gfx.items.steel_crate
-		ni.particle = gfx.particles.steel_crate
+	elseif t >= 90 then
+		ni.gfx = gfx.items.dynamite
 	end
 	ni.w = ni.gfx:getWidth()
 	ni.h = ni.gfx:getHeight()
@@ -90,7 +90,8 @@ function love.load()
 	gfx = {
 		items = {
 			wooden_crate = love.graphics.newImage('resources/crate-1.png'),
-			steel_crate = love.graphics.newImage('resources/crate-2.png')
+			steel_crate = love.graphics.newImage('resources/crate-2.png'),
+			dynamite = love.graphics.newImage('resources/dynamite.png')
 		},
 		background = love.graphics.newImage('resources/background.png'),
 		fonts = {
@@ -108,7 +109,8 @@ function love.load()
 	sfx = {
 		item_open = {
 			love.audio.newSource('resources/open.wav', 'static'),
-			love.audio.newSource('resources/open-2.wav', 'static')
+			love.audio.newSource('resources/open-2.wav', 'static'),
+			love.audio.newSource('resources/explosion.wav', 'static')
 		},
 		music = love.audio.newSource('resources/music.wav', 'stream')
 	}
@@ -150,7 +152,11 @@ function love.draw()
 end
 
 function collectItem(k, item)
-	sfx.item_open[math.random(#sfx.item_open)]:play()
+	if item.gfx == gfx.items.dynamite then
+		sfx.item_open[3]:play()
+	else
+		sfx.item_open[math.random(1, 2)]:play()
+	end
 
 	-- Particles.
 	if item.gfx == gfx.items.wooden_crate then
@@ -158,30 +164,37 @@ function collectItem(k, item)
 			table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate))
 			table.insert(particles, newParticle(item.x, item.y, gfx.particles.wooden_crate_2))
 		end
-	else
+	elseif item.gfx == gfx.items.steel_crate then
 		for i = 2, math.random(8), 1 do
 			table.insert(particles, newParticle(item.x, item.y, gfx.particles.metal_crate))
 			table.insert(particles, newParticle(item.x, item.y, gfx.particles.metal_crate_2))
 		end
 	end
-	
-	for res, qty in pairs(item.prize) do
-		inventory[res] = inventory[res] + qty
-		print('Gained '..qty..' '..res..'!')
 
-		if res == "gems" then
-			for i = 0, qty, 1 do
-				table.insert(particles, newParticle(item.x, item.y, gfx.particles.gem))
+	if item.gfx ~= gfx.items.dynamite then
+		for res, qty in pairs(item.prize) do
+			inventory[res] = inventory[res] + qty
+			print('Gained '..qty..' '..res..'!')
+
+			if res == "gems" then
+				for i = 0, qty, 1 do
+					table.insert(particles, newParticle(item.x, item.y, gfx.particles.gem))
+				end
+			end
+
+			if res == "gold" then
+				for i = 0, qty, 1 do
+					table.insert(particles, newParticle(item.x, item.y, gfx.particles.gold))
+				end
 			end
 		end
-
-		if res == "gold" then
-			for i = 0, qty, 1 do
-				table.insert(particles, newParticle(item.x, item.y, gfx.particles.gold))
-			end
+		table.remove(items, k)
+	elseif item.gfx == gfx.items.dynamite then
+		table.remove(items, k)
+		for k, v in pairs(items) do
+			collectItem(k, v)
 		end
 	end
-	table.remove(items, k)
 end
 
 function love.mousepressed(x, y, k)
